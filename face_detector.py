@@ -1,5 +1,3 @@
-"""Find a 3x3 Rubik's cube face anywhere in a camera frame."""
-
 from dataclasses import dataclass
 
 import cv2

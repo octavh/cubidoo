@@ -1,5 +1,3 @@
-"""Classify the color of a cube sticker from an HSV image patch."""
-
 import numpy as np
 
 MIN_VALUE = 60             # darker than this -> not a sticker

@@ -1,5 +1,3 @@
-"""Drawing helpers: camera overlay and the 3x3 face grid."""
-
 import cv2
 import numpy as np
 

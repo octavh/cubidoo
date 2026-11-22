@@ -1,16 +1,3 @@
-"""cubidoo - read the colors of one Rubik's cube face from your webcam.
-
-Show a face of the cube to the camera anywhere in the frame. Whenever a face
-is detected, the "Cube Face" window is updated with the colors it reads.
-When no face is visible, the grid keeps the last reading.
-
-Keys:
-  q / ESC   quit
-  m         toggle mirrored preview
-  w y r o g b   calibrate that color using the CENTER sticker of the detected face
-  x         reset calibration to defaults
-"""
-
 import cv2
 
 from color_detector import ColorDetector
