@@ -1,5 +1,5 @@
 # Cubidoo
-Interactive Cube detector made with Machine Learning and Computer Vision
+Interactive Cube detector made with Computer Vision
 
 ## Run
 
