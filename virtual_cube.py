@@ -4,6 +4,7 @@ Controls (click the window first so it has keyboard focus):
   u d l r f b     turn that face clockwise (as seen when looking at that face)
   m e s           turn a middle slice (M follows L, E follows D, S follows F)
   Shift + letter  turn counter-clockwise (or press ' first, then the letter)
+                  Caps Lock has no effect on turn direction
   mouse drag      rotate the whole cube freely (left/right, up/down)
 
 Turns are relative to how you are holding the cube, like on a real one: "u" turns
@@ -13,9 +14,11 @@ whichever face is currently on top of the screen, "f" the one facing you, etc.
   0               reset to solved
   q / Esc         quit
 """
+import ctypes
 import itertools
 import math
 import random
+import sys
 import time
 from collections import deque
 
@@ -208,6 +211,13 @@ def render(cube, view, turning=None):
     return img
 
 
+def caps_lock_on():
+    """Whether Caps Lock is on (Windows only; elsewhere assume off)."""
+    if sys.platform != "win32":
+        return False
+    return bool(ctypes.windll.user32.GetKeyState(0x14) & 1)
+
+
 def put_text(img, text, org, color=(230, 230, 230), scale=0.5):
     cv2.putText(img, text, org, cv2.FONT_HERSHEY_SIMPLEX, scale, color, 1, cv2.LINE_AA)
 
@@ -285,10 +295,13 @@ def main():
             continue
         key &= 0xFF
         ch = chr(key)
-        if key == 27 or ch == "q":
+        if key == 27 or ch.lower() == "q":
             break
         if ch.upper() in MOVES:
-            prime = ch.isupper() != prime_next
+            # Shift makes the letter uppercase, but Caps Lock flips the case too,
+            # so undo the Caps Lock flip: only Shift decides the direction.
+            shifted = ch.isupper() != caps_lock_on()
+            prime = shifted != prime_next
             label = ch.upper() + ("'" if prime else "")
             queue.append((label, view_turn(ch.upper(), prime, view), TURN_TIME, True))
             prime_next = False
