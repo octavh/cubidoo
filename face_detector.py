@@ -9,6 +9,7 @@ MAX_ASPECT = 1.4           # sticker bounding box width/height ratio
 MIN_FILL = 0.75            # contour area / bounding box area
 GRID_TOLERANCE = 0.35      # max lattice position error, as fraction of spacing
 MIN_MATCHED = 8            # stickers (of 9) that must be found to accept a face
+MIN_VALID_PATCHES = 8      # patches (of 9) that must look like real stickers (glare/shadow tolerance)
 PATCH_FRACTION = 0.35      # sampled patch side as fraction of sticker spacing
 
 GRID_OFFSETS = [(i, j) for j in (-1, 0, 1) for i in (-1, 0, 1)]  # row-major
@@ -121,7 +122,7 @@ def detect_face(frame, color_detector):
     points, spacing = grid
     hsv = cv2.cvtColor(cv2.GaussianBlur(frame, (5, 5), 0), cv2.COLOR_BGR2HSV)
     patches = [sample_patch(hsv, p, spacing) for p in points]
-    if not all(color_detector.is_sticker(p) for p in patches):
+    if sum(color_detector.is_sticker(p) for p in patches) < MIN_VALID_PATCHES:
         return None, candidates
     colors = [color_detector.classify(p) for p in patches]
     return Face(points, colors, patches, spacing), candidates
