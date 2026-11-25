@@ -1,3 +1,4 @@
+import argparse
 import sys
 from collections import Counter, deque
 
@@ -6,6 +7,7 @@ import cv2
 from color_detector import ColorDetector
 from display import draw_detection, render_grid
 from face_detector import detect_face
+from yolo_detector import MODEL_PATH
 
 CALIBRATION_KEYS = {
     ord("w"): "white",
@@ -30,12 +32,33 @@ def open_camera():
     return cv2.VideoCapture(0)
 
 
+def make_detector(classic):
+    """Trained YOLO detector if available, otherwise the classic contour-based one."""
+    if not classic and MODEL_PATH.exists():
+        try:
+            from yolo_detector import YoloFaceDetector
+            print(f"Using trained YOLO detector ({MODEL_PATH.name})")
+            return YoloFaceDetector().detect
+        except ImportError:
+            print("ultralytics is not installed - falling back to the classic detector")
+    elif not classic:
+        print(f"No trained model at {MODEL_PATH} (run train_detector.py) - using the classic detector")
+    else:
+        print("Using the classic detector")
+    return detect_face
+
+
 def vote(history):
     """Most common color per sticker position across recent detections."""
     return [Counter(colors[k] for colors in history).most_common(1)[0][0] for k in range(9)]
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--classic", action="store_true", help="use the contour-based detector instead of YOLO")
+    args = parser.parse_args()
+    detect = make_detector(args.classic)
+
     cap = open_camera()
     if not cap.isOpened():
         raise SystemExit("Could not open camera. On macOS, grant camera access to your terminal/IDE "
@@ -55,7 +78,7 @@ def main():
             break
 
         # Detect on the raw (unmirrored) frame so the grid matches the real face layout.
-        face, candidates = detect_face(frame, color_detector)
+        face, candidates = detect(frame, color_detector)
         if face is not None:
             if frames_since_face >= FORGET_FRAMES:
                 history.clear()  # face was gone a while - probably a different face now
