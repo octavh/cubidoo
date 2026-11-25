@@ -4,4 +4,3 @@ datasets/
 runs/
 backgrounds/
 *.pt
-!models/cube_pose.pt
